@@ -1,0 +1,5 @@
+{
+  "name": "GlowStudio",
+  "description": "A high-performance AI photo editor powered by Gemini 2.5 Flash Image. Apply filters and transform photos with natural language.",
+  "requestFramePermissions": []
+}
