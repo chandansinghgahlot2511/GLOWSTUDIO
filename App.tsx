@@ -106,12 +106,6 @@ const App: React.FC = () => {
         {/* Left Sidebar - Ads */}
         <div className="hidden 2xl:flex flex-col w-72 shrink-0 pt-12 sticky top-24 h-fit gap-8">
            <AdSpace variant="vertical" className="shadow-lg shadow-black/20" />
-           
-           <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/50 text-center shadow-lg">
-              <h4 className="text-sm font-semibold text-white mb-2">Go Pro</h4>
-              <p className="text-xs text-slate-400 mb-4 leading-relaxed">Remove ads, unlock 4K export, and get exclusive filters.</p>
-              <Button variant="secondary" className="w-full text-xs py-2 bg-slate-800 hover:bg-slate-700 border-slate-600">Upgrade Plan</Button>
-           </div>
         </div>
 
         {/* Central Content */}
