@@ -1,26 +1,26 @@
 import React from 'react';
-import { ImageFile, Language } from '../types';
+import { ImageFile } from '../types';
 
 interface FilterBarProps {
   originalImage: ImageFile;
   onFilterApplied: (image: ImageFile) => void;
-  language: Language;
 }
 
 const FILTERS = [
-  { id: 'none', name: { en: 'Normal', hi: 'सामान्य' }, css: 'none' },
-  { id: 'grayscale', name: { en: 'B&W', hi: 'ब्लैक एंड व्हाइट' }, css: 'grayscale(100%)' },
-  { id: 'sepia', name: { en: 'Sepia', hi: 'सीपिया' }, css: 'sepia(100%)' },
-  { id: 'vintage', name: { en: 'Vintage', hi: 'विंटेज' }, css: 'sepia(50%) contrast(120%) brightness(90%)' },
-  { id: 'cool', name: { en: 'Cool', hi: 'ठंडा' }, css: 'hue-rotate(180deg) saturate(50%)' },
-  { id: 'warm', name: { en: 'Warm', hi: 'गर्म' }, css: 'sepia(30%) saturate(140%)' },
-  { id: 'invert', name: { en: 'Invert', hi: 'इन्वर्ट' }, css: 'invert(100%)' },
-  { id: 'brightness', name: { en: 'Bright', hi: 'उज्ज्वल' }, css: 'brightness(125%)' },
-  { id: 'contrast', name: { en: 'Contrast', hi: 'कंट्रास्ट' }, css: 'contrast(150%)' },
-  { id: 'saturate', name: { en: 'Vibrant', hi: 'जीवंत' }, css: 'saturate(200%)' },
+  { id: 'none', name: 'Normal', css: 'none' },
+  { id: 'y2k', name: 'Y2K', css: 'saturate(1.5) contrast(1.2) hue-rotate(-10deg)' },
+  { id: 'digicam', name: 'Digicam', css: 'brightness(1.2) contrast(1.1) saturate(0.8)' },
+  { id: 'indie', name: 'Indie', css: 'sepia(0.2) contrast(1.2) brightness(1.1) saturate(1.3)' },
+  { id: 'disposable', name: 'Disposable', css: 'sepia(0.2) contrast(1.2) brightness(1.1)' },
+  { id: 'grunge', name: 'Grunge', css: 'grayscale(100%) contrast(1.5) brightness(0.8)' },
+  { id: 'cool', name: 'Cool', css: 'hue-rotate(180deg) saturate(50%)' },
+  { id: 'warm', name: 'Warm', css: 'sepia(30%) saturate(140%)' },
+  { id: 'vintage', name: 'Vintage', css: 'sepia(50%) contrast(120%) brightness(90%)' },
+  { id: 'invert', name: 'Invert', css: 'invert(100%)' },
+  { id: 'saturate', name: 'Vibrant', css: 'saturate(200%)' },
 ];
 
-export const FilterBar: React.FC<FilterBarProps> = ({ originalImage, onFilterApplied, language }) => {
+export const FilterBar: React.FC<FilterBarProps> = ({ originalImage, onFilterApplied }) => {
   const [activeFilter, setActiveFilter] = React.useState('none');
 
   const applyFilter = (filterId: string, cssFilter: string) => {
@@ -66,7 +66,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ originalImage, onFilterApp
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
         </svg>
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-          {language === 'en' ? 'Filters' : 'फ़िल्टर'}
+          Filters
         </span>
       </div>
       
@@ -89,11 +89,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({ originalImage, onFilterApp
                   src={originalImage.previewUrl} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   style={{ filter: filter.css }}
-                  alt={filter.name[language]}
+                  alt={filter.name}
                 />
               </div>
               <span className={`text-xs font-medium whitespace-nowrap ${activeFilter === filter.id ? 'text-purple-300' : 'text-slate-400 group-hover:text-slate-300'}`}>
-                {filter.name[language]}
+                {filter.name}
               </span>
             </button>
           ))}

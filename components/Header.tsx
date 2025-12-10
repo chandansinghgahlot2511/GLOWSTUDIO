@@ -1,14 +1,8 @@
 import React from 'react';
-import { Language } from '../types';
 
-interface HeaderProps {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-}
-
-export const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
+export const Header: React.FC = () => {
   return (
-    <header className="w-full py-6 px-4 md:px-8 flex items-center justify-between border-b border-slate-800/50 backdrop-blur-md sticky top-0 z-50 bg-slate-900/80">
+    <header className="w-full py-6 px-8 md:px-16 lg:px-24 flex items-center justify-between border-b border-slate-800/50 backdrop-blur-md sticky top-0 z-30 bg-slate-900/80">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
@@ -18,25 +12,16 @@ export const Header: React.FC<HeaderProps> = ({ language, setLanguage }) => {
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight">GlowStudio</h1>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
-            {language === 'en' ? 'AI Photo Editor' : 'एआई फोटो एडिटर'}
+            AI Photo Editor
           </p>
         </div>
       </div>
       
       <div className="flex items-center gap-4">
-        <button 
-          onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-          className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sm font-medium text-slate-200 transition-colors border border-slate-700"
-        >
-          {language === 'en' ? 'हिंदी' : 'English'}
-        </button>
-        
-        <div className="h-6 w-px bg-slate-800 hidden md:block"></div>
-        
         <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
             <span className="text-xs font-medium text-purple-400 hidden sm:inline">
-              {language === 'en' ? 'System Online' : 'सिस्टम ऑनलाइन'}
+              System Online
             </span>
         </div>
       </div>

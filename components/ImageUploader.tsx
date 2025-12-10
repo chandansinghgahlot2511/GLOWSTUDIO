@@ -1,18 +1,17 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { ImageFile, Language } from '../types';
+import { ImageFile } from '../types';
 
 interface ImageUploaderProps {
   onImageSelected: (image: ImageFile) => void;
-  language: Language;
 }
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, language }) => {
+export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected }) => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert(language === 'en' ? 'Please upload an image file (PNG, JPG, WebP)' : 'कृपया एक छवि फ़ाइल अपलोड करें (PNG, JPG, WebP)');
+      alert('Please upload an image file (PNG, JPG, WebP)');
       return;
     }
 
@@ -55,12 +54,6 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, l
     }
   };
 
-  const t = {
-    drop: { en: "Drop your image here", hi: "अपनी छवि यहाँ छोड़ें" },
-    browse: { en: "or click to browse from your device", hi: "या अपने डिवाइस से ब्राउज़ करने के लिए क्लिक करें" },
-    supports: { en: "Supports PNG, JPG, WEBP up to 10MB", hi: "10MB तक PNG, JPG, WEBP का समर्थन करता है" }
-  };
-
   return (
     <div 
       className={`relative group w-full max-w-2xl mx-auto h-96 rounded-3xl border-2 border-dashed transition-all duration-300 ease-out flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden
@@ -89,11 +82,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, l
           </svg>
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-slate-200">{t.drop[language]}</h3>
-          <p className="text-sm text-slate-400 mt-2">{t.browse[language]}</p>
+          <h3 className="text-xl font-semibold text-slate-200">Drop your image here</h3>
+          <p className="text-sm text-slate-400 mt-2">or click to browse from your device</p>
         </div>
         <div className="text-xs text-slate-500 pt-2">
-          {t.supports[language]}
+          Supports PNG, JPG, WEBP up to 10MB
         </div>
       </div>
 

@@ -18,4 +18,9 @@ export interface EditResult {
   timestamp: number;
 }
 
-export type Language = 'en' | 'hi';
+export interface HistoryItem {
+  id: string;
+  imageUrl: string;
+  prompt: string;
+  timestamp: number;
+}

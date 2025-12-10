@@ -1,174 +1,111 @@
 import React, { useState, useRef } from 'react';
 import { Button } from './Button';
-import { ImageFile, Language } from '../types';
+import { ImageFile } from '../types';
+import { enhancePrompt } from '../services/geminiService';
 
 interface PromptBarProps {
   onSubmit: (prompt: string, referenceImage: ImageFile | null) => void;
   isLoading: boolean;
-  language: Language;
 }
 
-const SUGGESTIONS = [
-  // Traditional & Cultural
-  { en: "Wear traditional Indian clothing", hi: "पारंपरिक भारतीय परिधान पहनाएं" },
-  { en: "Add festive Diwali lights", hi: "दिवाली की रोशनी जोड़ें" },
-  { en: "Background of an ancient temple", hi: "प्राचीन मंदिर का बैकग्राउंड" },
-  { en: "Wear a saree", hi: "साड़ी पहनाएं" },
-  { en: "Wear a sherwani", hi: "शेरवानी पहनाएं" },
-  { en: "Add traditional jewelry", hi: "पारंपरिक आभूषण जोड़ें" },
-  { en: "Holi festival colors", hi: "होली के रंग" },
-  { en: "Mehndi on hands", hi: "हाथों पर मेहंदी" },
-  { en: "Wear a turban", hi: "पगड़ी पहनाएं" },
-
-  // Artistic Styles
-  { en: "Make it an oil painting", hi: "इसे ऑइल पेंटिंग जैसा बनाएं" },
-  { en: "Convert to watercolor sketch", hi: "वाटरकलर स्केच में बदलें" },
-  { en: "Pencil sketch style", hi: "पेंसिल स्केच स्टाइल" },
-  { en: "Van Gogh style", hi: "वैन गॉग स्टाइल" },
-  { en: "Pop art style", hi: "पॉप आर्ट स्टाइल" },
-  { en: "Cyberpunk aesthetic", hi: "साइबरपंक एस्थेटिक" },
-  { en: "Pixel art style", hi: "पिक्सेल आर्ट स्टाइल" },
-  { en: "Anime style", hi: "एनीमे स्टाइल" },
-  { en: "Cartoon character", hi: "कार्टून चरित्र" },
-  { en: "3D render style", hi: "3D रेंडर स्टाइल" },
-  { en: "Claymation style", hi: "क्लेमेशन स्टाइल" },
-  { en: "Origami style", hi: "ओरिगामी स्टाइल" },
-  { en: "Stained glass art", hi: "सना हुआ ग्लास कला" },
-  { en: "Mosaic art", hi: "मोज़ेक कला" },
-  { en: "Graffiti art", hi: "ग्रेफिटी कला" },
-  { en: "Charcoal drawing", hi: "चारकोल ड्राइंग" },
-  { en: "Impressionist painting", hi: "इंप्रेशनिस्ट पेंटिंग" },
-  { en: "Surrealist art", hi: "अतियथार्थवादी कला" },
-  { en: "Ukiyo-e style", hi: "उकियो-ए स्टाइल" },
-  { en: "Low poly art", hi: "लो पॉली आर्ट" },
-
-  // Photography & Filters
-  { en: "Vintage slide photo", hi: "विंटेज स्लाइड फोटो" },
-  { en: "Vintage film style", hi: "विंटेज फिल्म स्टाइल" },
-  { en: "Black and white noir", hi: "ब्लैक एंड व्हाइट नॉयर" },
-  { en: "Polaroid photo style", hi: "पोलाराइड फोटो स्टाइल" },
-  { en: "Fisheye lens effect", hi: "फिशआई लेंस प्रभाव" },
-  { en: "Double exposure", hi: "डबल एक्सपोज़र" },
-  { en: "Sepia tone", hi: "सीपिया टोन" },
-  { en: "Glitch effect", hi: "गड़बड़ (Glitch) प्रभाव" },
-  { en: "Vaporwave style", hi: "वेपरवेव स्टाइल" },
-  { en: "Kodak film look", hi: "कोडैक फिल्म लुक" },
-  { en: "Bokeh background", hi: "बोकेह बैकग्राउंड" },
-  { en: "Tilt-shift effect", hi: "टिल्ट-शिफ्ट प्रभाव" },
-  { en: "HDR style", hi: "HDR स्टाइल" },
-  { en: "Macro photography", hi: "मैक्रो फोटोग्राफी" },
-  { en: "Long exposure", hi: "लॉन्ग एक्सपोज़र" },
-  { en: "Thermal camera look", hi: "थर्मल कैमरा लुक" },
-
-  // Lighting & Atmosphere
-  { en: "Golden hour lighting", hi: "गोल्डन आवर लाइटिंग" },
-  { en: "Neon lights glowing", hi: "नियॉन रोशनी चमकती हुई" },
-  { en: "Cinematic lighting", hi: "सिनेमैटिक लाइटिंग" },
-  { en: "Moonlight setting", hi: "चांदनी रात की सेटिंग" },
-  { en: "Sunset background", hi: "सूर्यास्त का बैकग्राउंड" },
-  { en: "Rainy day mood", hi: "बरसात के दिन का मूड" },
-  { en: "Snowy atmosphere", hi: "बर्फीला वातावरण" },
-  { en: "Foggy morning", hi: "धुंध भरी सुबह" },
-  { en: "Underwater scene", hi: "पानी के नीचे का दृश्य" },
-  { en: "Fire and flames", hi: "आग और लपटें" },
-  { en: "Disco lights", hi: "डिस्को लाइट्स" },
-  { en: "Candlelight", hi: "मोमबत्ती की रोशनी" },
-  { en: "Northern lights", hi: "उत्तरी रोशनी (Aurora)" },
-  { en: "Stormy sky", hi: "तूफानी आसमान" },
-  { en: "Rainbow in sky", hi: "आसमान में इंद्रधनुष" },
-
-  // Backgrounds
-  { en: "In space", hi: "अंतरिक्ष में" },
-  { en: "On Mars", hi: "मंगल ग्रह पर" },
-  { en: "In a jungle", hi: "जंगल में" },
-  { en: "On a beach", hi: "समुद्र तट पर" },
-  { en: "In a futuristic city", hi: "भविष्य के शहर में" },
-  { en: "In a castle", hi: "महल में" },
-  { en: "In a library", hi: "पुस्तकालय में" },
-  { en: "At a coffee shop", hi: "कॉफी शॉप में" },
-  { en: "On a mountain peak", hi: "पहाड़ की चोटी पर" },
-  { en: "In a flower garden", hi: "फूलों के बगीचे में" },
-  { en: "Under a waterfall", hi: "झरने के नीचे" },
-  { en: "In a desert", hi: "रेगिस्तान में" },
-  { en: "On a boat", hi: "नाव पर" },
-  { en: "In a stadium", hi: "स्टेडियम में" },
-  { en: "In a video game", hi: "वीडियो गेम में" },
-
-  // Fashion & Accessories
-  { en: "Wear sunglasses", hi: "धूप का चश्मा पहनाएं" },
-  { en: "Wear a tuxedo", hi: "टक्सीडो पहनाएं" },
-  { en: "Wear a leather jacket", hi: "लेदर जैकेट पहनाएं" },
-  { en: "Wear a floral dress", hi: "फ्लोरल ड्रेस पहनाएं" },
-  { en: "Wear a cowboy hat", hi: "काउबॉय टोपी पहनाएं" },
-  { en: "Wear a crown", hi: "ताज पहनाएं" },
-  { en: "Wear a space suit", hi: "स्पेस सूट पहनाएं" },
-  { en: "Wear a superhero cape", hi: "सुपरहीरो केप पहनाएं" },
-  { en: "Wear glasses", hi: "चश्मा पहनाएं" },
-  { en: "Wear a hoodie", hi: "हुडी पहनाएं" },
-  { en: "Wear a winter coat", hi: "विंटर कोट पहनाएं" },
-  { en: "Wear a swimsuit", hi: "स्विमसूट पहनाएं" },
-  { en: "Wear a uniform", hi: "यूनिफ़ॉर्म पहनाएं" },
-  { en: "Wear a mask", hi: "मास्क पहनाएं" },
-  { en: "Wear headphones", hi: "हेडफ़ोन पहनाएं" },
-
-  // Fun & Fantasy
-  { en: "Turn into a zombie", hi: "ज़ोंबी में बदलें" },
-  { en: "Turn into a vampire", hi: "वैम्पायर में बदलें" },
-  { en: "Turn into a cyborg", hi: "साइबोर्ग में बदलें" },
-  { en: "Turn into a fairy", hi: "परी में बदलें" },
-  { en: "Turn into a statue", hi: "मूर्ति में बदलें" },
-  { en: "Turn into a robot", hi: "रोबोट में बदलें" },
-  { en: "Add angel wings", hi: "परी के पंख जोड़ें" },
-  { en: "Add dragon wings", hi: "ड्रैगन के पंख जोड़ें" },
-  { en: "Hold a magic wand", hi: "जादुई छड़ी पकड़ें" },
-  { en: "Hold a sword", hi: "तलवार पकड़ें" },
-  { en: "Ride a horse", hi: "घोड़े की सवारी करें" },
-  { en: "Ride a dragon", hi: "ड्रैगन की सवारी करें" },
-  { en: "Ride a motorcycle", hi: "मोटरसाइकिल चलाएं" },
-  { en: "Float in air", hi: "हवा में तैरें" },
-  { en: "Surrounded by butterflies", hi: "तितलियों से घिरा हुआ" },
-  { en: "Surrounded by fireflies", hi: "जुगनू से घिरा हुआ" },
-  { en: "With a cute puppy", hi: "प्यारे पिल्ले के साथ" },
-  { en: "With a kitten", hi: "बिल्ली के बच्चे के साथ" },
-  { en: "With a parrot", hi: "तोते के साथ" },
-  { en: "With a lion", hi: "शेर के साथ" },
-  
-  // Hair & Face
-  { en: "Blue hair color", hi: "नीले रंग के बाल" },
-  { en: "Red hair color", hi: "लाल रंग के बाल" },
-  { en: "Blonde hair", hi: "सुनहरे बाल" },
-  { en: "Curly hair", hi: "घुंघराले बाल" },
-  { en: "Straight hair", hi: "सीधे बाल" },
-  { en: "Short haircut", hi: "छोटे बाल" },
-  { en: "Long flowing hair", hi: "लंबे लहराते बाल" },
-  { en: "Mohawk hairstyle", hi: "मोहाक हेयरस्टाइल" },
-  { en: "Bald head", hi: "गंजा सिर" },
-  { en: "Beard and mustache", hi: "दाढ़ी और मूंछ" },
-  { en: "Clown makeup", hi: "जोकर मेकअप" },
-  { en: "Tribal face paint", hi: "आदिवासी फेस पेंट" },
-  { en: "Aging effect", hi: "उम्र बढ़ने का प्रभाव" },
-  { en: "Younger effect", hi: "युवा दिखने का प्रभाव" },
-  { en: "Big smile", hi: "बड़ी मुस्कान" }
+const TRENDING_SUGGESTIONS = [
+  "Cyberpunk neon portrait",
+  "Vintage 90s anime style",
+  "Professional LinkedIn headshot",
+  "Claymation style",
+  "PS2 graphics aesthetic",
+  "Retro 80s synthwave"
 ];
 
-export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, language }) => {
+const SUGGESTIONS = [
+  // Gen Z Aesthetics
+  "Y2K aesthetic with butterfly clips",
+  "0.5x fisheye lens selfie",
+  "Vintage 2000s digicam look",
+  "Cybercore aesthetic with neon",
+  "Grainy disposable camera vibe",
+  "E-girl aesthetic with heart makeup",
+  "Frutiger Aero aesthetic",
+  "McBling style with rhinestones",
+  "Coquette aesthetic with bows",
+  "Webcore weirdness",
+  "Dreamcore surrealism",
+  "Dark Academia library vibes",
+  "Cottagecore picnic setting",
+  "Old Money aesthetic",
+  "Clean Girl aesthetic",
+  "Indie sleaze vibe",
+  "Grunge texture overlay",
+  "Vaporwave glitch background",
+  "Retro anime screenshot style",
+  "Lo-fi hip hop vibe",
+
+  // Photography & Edits
+  "Flash photography at night",
+  "Motion blur effect",
+  "Overexposed flash look",
+  "Chromatic aberration glitch",
+  "Scanlines effect",
+  "VHS tape distortion",
+  "Polaroid frame",
+  "Film burn light leaks",
+  "Dithered pixel art",
+  "Halftone pattern",
+  "Fisheye lens",
+  "Wide angle lens distortion",
+  "Thermal camera effect",
+  "Night vision green tint",
+  "X-ray effect",
+
+  // Fun & Fantasy
+  "Add angel wings and halo",
+  "Cyberpunk robot parts",
+  "Fairy wings and glitter",
+  "Vampire fangs and red eyes",
+  "Demon horns and tail",
+  "Elf ears and nature magic",
+  "Mermaid tail underwater",
+  "Astronaut in deep space",
+  "Zombie makeup style",
+  "Clowncore aesthetic",
+  
+  // Locations & Vibes
+  "In a neon lit arcade",
+  "At a concerts mosh pit",
+  "In a liminal space hallway",
+  "On a vaporwave beach",
+  "Inside a spaceship cockpit",
+  "At a retro diner",
+  "In a messy bedroom mirror selfie",
+  "Underground rave party",
+  "Abandoned mall setting",
+  "Rooftop at sunset",
+
+  // Accessories & Fashion
+  "Wear pit viper sunglasses",
+  "Wear chunky headphones",
+  "Wear a bucket hat",
+  "Wear oversized hoodie",
+  "Wear baggy jeans",
+  "Wear platform boots",
+  "Wear star hair clips",
+  "Wear layered silver chains",
+  "Wear fingerless gloves",
+  "Wear goth makeup"
+];
+
+export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading }) => {
   const [prompt, setPrompt] = useState('');
+  const [isEnhancing, setIsEnhancing] = useState(false);
   const [referenceImage, setReferenceImage] = useState<ImageFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const t = {
-    placeholderRef: { en: "Describe how to use this reference image...", hi: "इस संदर्भ छवि का उपयोग कैसे करें, वर्णन करें..." },
-    placeholder: { en: "Describe how to edit (or add a reference image)...", hi: "संपादित कैसे करें वर्णन करें (या एक संदर्भ छवि जोड़ें)..." },
-    generate: { en: "Generate", hi: "उत्पन्न करें" },
-    addRef: { en: "Add reference image", hi: "संदर्भ छवि जोड़ें" }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (!file.type.startsWith('image/')) {
-        alert(language === 'en' ? "Please select an image file." : "कृपया एक छवि फ़ाइल चुनें।");
+        alert("Please select an image file.");
         return;
       }
       
@@ -205,6 +142,15 @@ export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, langu
     setPrompt(text);
   };
 
+  const handleEnhance = async () => {
+    if (!prompt.trim() || isEnhancing) return;
+    
+    setIsEnhancing(true);
+    const improved = await enhancePrompt(prompt);
+    setPrompt(improved);
+    setIsEnhancing(false);
+  };
+
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const scrollAmount = 300;
@@ -216,7 +162,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, langu
   };
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 z-40 px-4 flex flex-col items-center justify-end gap-3 pointer-events-none">
+    <div className="fixed bottom-8 left-0 right-0 z-40 px-6 md:px-12 flex flex-col items-center justify-end gap-3 pointer-events-none">
       
       {/* Suggestions Slider */}
       {!isLoading && (
@@ -234,16 +180,34 @@ export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, langu
 
           <div 
             ref={scrollContainerRef}
-            className="w-full overflow-x-auto flex gap-2 pb-2 [&::-webkit-scrollbar]:hidden px-1 scroll-smooth"
+            className="w-full overflow-x-auto flex gap-2 pb-2 [&::-webkit-scrollbar]:hidden px-1 scroll-smooth items-center"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
+            {/* Trending Section */}
+            <div className="flex items-center gap-2 pr-2 border-r border-slate-700/50 mr-2 shrink-0">
+               <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider whitespace-nowrap pl-1">Trending</span>
+            </div>
+
+            {TRENDING_SUGGESTIONS.map((s, i) => (
+              <button
+                key={`trending-${i}`}
+                onClick={() => handleSuggestionClick(s)}
+                className="shrink-0 px-3 py-1.5 rounded-full bg-purple-900/40 backdrop-blur-md border border-purple-500/50 text-xs font-medium text-purple-200 hover:bg-purple-600 hover:text-white hover:border-purple-400 transition-all shadow-lg shadow-purple-900/20 cursor-pointer active:scale-95 whitespace-nowrap flex items-center gap-1.5 group"
+              >
+                <span className="text-xs group-hover:animate-bounce">🔥</span>
+                {s}
+              </button>
+            ))}
+
+            <div className="w-px h-4 bg-slate-700/50 mx-1 shrink-0"></div>
+
             {SUGGESTIONS.map((s, i) => (
               <button
                 key={i}
-                onClick={() => handleSuggestionClick(s[language])}
+                onClick={() => handleSuggestionClick(s)}
                 className="shrink-0 px-3 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700 text-xs font-medium text-slate-300 hover:bg-purple-600 hover:text-white hover:border-purple-500 transition-all shadow-lg cursor-pointer active:scale-95 whitespace-nowrap"
               >
-                {s[language]}
+                {s}
               </button>
             ))}
           </div>
@@ -298,7 +262,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, langu
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="p-2 mr-1 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-xl transition-all"
-              title={t.addRef[language]}
+              title="Add reference image"
               disabled={isLoading}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -311,10 +275,32 @@ export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, langu
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder={referenceImage ? t.placeholderRef[language] : t.placeholder[language]}
+            placeholder={referenceImage ? "Describe how to use this reference image..." : "Describe your Gen Z edit..."}
             className="w-full bg-transparent text-white placeholder-slate-400 border-none focus:ring-0 h-12 outline-none"
             disabled={isLoading}
           />
+          
+          {/* Enhance Button */}
+          {prompt.trim().length > 3 && !isLoading && (
+            <button
+              type="button"
+              onClick={handleEnhance}
+              disabled={isEnhancing}
+              className={`p-2 rounded-xl transition-all mr-2 ${isEnhancing ? 'bg-purple-500/20 text-purple-400' : 'text-slate-400 hover:text-yellow-300 hover:bg-yellow-500/10'}`}
+              title="Enhance prompt with AI"
+            >
+              {isEnhancing ? (
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                  <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576L8.279 5.044A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5zM16.5 15a.75.75 0 01.712.513l.394 1.183c.15.447.5.799.948.948l1.183.394a.75.75 0 010 1.422l-1.183.394c-.447.15-.799.502-.948.948l-.394 1.183a.75.75 0 01-1.422 0l-.394-1.183a1.5 1.5 0 00-.948-.948l-1.183-.394a.75.75 0 010-1.422l1.183-.394c.447-.15.799-.502.948-.948l.394-1.183A.75.75 0 0116.5 15z" clipRule="evenodd" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
 
         <Button 
@@ -323,7 +309,7 @@ export const PromptBar: React.FC<PromptBarProps> = ({ onSubmit, isLoading, langu
           isLoading={isLoading}
           className="shrink-0 bg-purple-600 hover:bg-purple-500 shadow-purple-500/30"
         >
-          {t.generate[language]}
+          Generate
         </Button>
       </form>
     </div>
